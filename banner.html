@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>轮播广告</title>
+	</head>
+	<style type="text/css">
+		*{
+			padding: 0;
+			margin: 0;
+			list-style: none;
+		}
+		.box{
+			 width: 670px;
+		            height: 240px;
+		            position: relative;
+			box-shadow: 0px 1px 7px 2px;
+			margin: 100px auto;
+			background-color: firebrick;
+			overflow: hidden;
+		}
+		ul{
+			position: absolute;
+			width: 10000px;
+		}
+		ul li{
+			float: left;
+		}
+		ol{
+			position: absolute;
+			right: 20px;
+			bottom: 10px;
+		}
+		ol li{
+			width: 20px;
+			height: 20px;
+			float: left;
+			border-radius: 50%;
+			text-align: center;
+			line-height: 20px;
+			margin: 0 5px;
+			cursor: pointer;
+			background-color: white;
+		}
+		section{
+			width: 100%;
+			height: 60px;
+			position: absolute;
+			bottom: 20px;
+			top: 90px;
+			z-index: 10;
+			display: none;
+		}
+		button{
+			width: 30px;
+			height: 60px;
+			font-size: 30px;
+			line-height: 60px;
+			background: rgba(200,177,210,0.5);
+			border: 1px solid #999;
+			cursor: pointer;
+		}
+		.left{
+			float: left;
+		}
+		.right{
+			float: right;
+		}
+		.current{
+			color: red;
+			background-color: rgba(236, 174, 184,0.5);
+		}
+	</style>
+	<body>
+		<div class="box">
+			 <ul class="imgBox">
+			 	<li><img src="img/1.jpg" alt=""/></li>
+			 	<li><img src="img/2.jpg" alt="" /></li>
+			 	<li><img src="img/3.jpg" alt="" /></li>
+			 	<li><img src="img/4.jpg" alt="" /></li>
+			 	<li><img src="img/5.jpg" alt="" /></li>
+			 	<li><img src="img/6.jpg" alt="" /></li>
+			 </ul>
+			 <ol style="z-index: 10;" class="btnBox">
+			 	<li class="current">1</li>
+			 	<li>2</li>
+			 	<li>3</li>
+			 	<li>4</li>
+			 	<li>5</li>
+			 	<li>6</li>
+			 </ol>
+			<section class='btns'>
+				<button class="left">&lt;</button>
+				<button class="right">&gt;</button>
+			</section>
+		</div>
+		<!-- <script src="move0.0.2.js"></script> -->
+		<script type="text/javascript">
+		var banner = (function () {
+			var timer2;
+			return {
+				init(){
+					// 获取最大的盒子
+					this.box = document.querySelector('.box');
+					// 获取img图片的盒子
+					this.imgBox = document.querySelector('.imgBox');
+					// 获取每一张图片
+					this.imgLi = this.imgBox.children;
+					// 获取小圆点的盒子
+					this.btnBox = document.querySelector('.btnBox');
+					// 获取每个小圆点
+					this.btnLi = this.btnBox.children;
+					// 给每个小圆点添加一个索引
+					for(var i = 0; i < this.btnLi.length; i++){
+						this.btnLi[i].index = i;
+					}
+					// 获取第一张图片和最后一张图片
+					var first = this.imgLi[0];
+					var last = this.imgLi[ this.imgLi.length - 1];
+					// 将第一张图片克隆到最后,最后一张图片克隆到第一张图片的前面
+					this.imgBox.appendChild(first.cloneNode(true));
+					this.imgBox.insertBefore(last.cloneNode(true),first);
+					// 将第一张图显示出来
+					this.imgBox.style.left = -670 + 'px';
+					// 获取按钮的盒子
+					this.section = document.querySelector('.btns');
+					// 获取两个切换按钮
+					this.left = document.querySelector('.left');
+					this.right = document.querySelector('.right');
+					// 创建一个全局的index
+					this.index = 0;
+					// 创建一个定时器
+					this.timer = null;
+					// 事件处理程序
+					this.autoPlay(this.index);
+					this.event();
+				},
+				event(){
+					var _this = this;
+					_this.btnBox.onclick = function(e){
+						e = e || window.event;
+						// 获取目标元素
+						var target = e.target || e.srcElement;
+						if(target.nodeName == 'LI'){
+							// 显示图片
+							_this.showImage(target.index);
+						}
+						// 自动播放图片
+						_this.autoPlay(_this.index);
+					}
+					// 鼠标滑上最大的盒子时
+					_this.box.onmouseenter = function(){
+						// 按钮显示
+						_this.section.style.display = 'block';
+						// 点击左按钮
+						_this.left.onclick = function(){
+							_this.showImage(--_this.index);
+							_this.autoPlay(_this.index);
+						}
+						// 点击右按钮
+						_this.right.onclick = function(){
+							_this.showImage(++_this.index);
+							_this.autoPlay(_this.index);
+						}
+					}
+					// 鼠标离开最大的盒子,按钮隐藏
+					_this.box.onmouseleave = function(){
+						_this.section.style.display = 'none';
+					}
+					
+				},
+				// 展示图片
+				showImage(index){
+					// 获取一个最大的索引值
+					var maxIndex = this.btnLi.length - 1;
+				            if(index > maxIndex) {
+				                index = 0;
+				                this.imgBox.style.left = 0;
+				            } else if(index < 0) {
+				                index = maxIndex;
+				                this.imgBox.style.left = -670 * (maxIndex + 2) + 'px';
+				            }
+					this.index = index;
+					// 把所有的小圆点的class去除
+					for(var i = 0; i < this.btnLi.length; i++){
+						this.btnLi[i].removeAttribute('class');
+					}
+					// 给点击的小圆点添加一个class
+					this.btnLi[index].className = 'current';
+					this.move(this.imgBox,'left',-670 * (index + 1));
+				},
+				// 自动播放
+				autoPlay(index){
+					var _this = this;
+					_this.index = index;
+					// 在每次调用的前,清除之前的定时器
+					clearInterval(timer2);
+					timer2 = setInterval(function(){
+						_this.index ++;
+						_this.showImage(_this.index);
+					}, 2000)
+				},
+				// 图片运动的方式,ele是要运动的元素,attr是元素的属性,target是运动的终止位置
+				move(ele, attr, target) {
+					// 判断传入的是dom对象还是类名
+					    if (typeof ele == 'string') {
+					        	ele = document.querySelector(ele);
+					    }
+					    // 清除之前的定时器
+					    clearInterval(ele.timer);
+					    // 获取初始值
+					    var init = parseFloat(this.getStyle(ele, attr));
+					    // 给每个ele添加一个定时器
+					    ele.timer = setInterval(function () {
+					    	        // 定义一个运动时的速度
+						        var speed = (target - init) / 20;
+						        // 判断速度是大于0还是小于0
+						        if(speed > 0) {
+						            	speed = Math.ceil(speed);
+						        } else {
+						            	speed = Math.floor(speed);
+						        }
+						        init += speed
+						        if ((speed >= 0 && init >= target) || (speed <= 0 && init <= target)) {
+						            	init = target;
+						            	clearInterval(ele.timer);
+						        }
+						        ele.style[attr] = init + 'px';
+					    }, 10)
+				},
+				// 获取非行内样式
+				getStyle(ele,attr){
+					// 兼容性
+					if(window.getComputedStyle){
+						return window.getComputedStyle(ele,null)[attr];
+					}
+					return ele.currentStyle[attr];
+				}
+			}
+		} ())
+		banner.init();
+		</script>
+	</body>
+</html>
